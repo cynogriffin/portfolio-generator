@@ -1,6 +1,6 @@
 const inquirer = require('inquirer')
-const fs = require('fs');
-const generatePage = require('./src/page-template')
+const generatePage = require('./src/page-template.js')
+const { writeFile, copyFile } = require('./utils/generate-site.js');
 
 
 
@@ -133,14 +133,27 @@ const promptProject = portfolioData => {
     });
 };
 
+// starts by asking the user their information
 promptUser()
+    // then collects the project info
     .then(promptProject)
+    // creates the html with all that data
     .then(portfolioData => {
-        const pageHTML = generatePage(portfolioData);
-
-        fs.writeFile('index.html', pageHTML, err => {
-            if (err) throw new Error(err);
-
-            console.log('Page created! Check out index.html in this directory to see it!');
-        });
+        return generatePage(portfolioData);
+    })
+    // writes the page to the dist
+    .then(pageHTML => {
+        return writeFile(pageHTML);
+    })
+    // copies the CSS to the dist
+    .then(writeFileResponse => {
+        console.log(writeFileResponse);
+        return copyFile();
+    })
+    // confirms that the CSS was copied correctly
+    .then(copyFileResponse => {
+        console.log(copyFileResponse);
+    })
+    .catch(err => {
+        console.log(err);
     });
